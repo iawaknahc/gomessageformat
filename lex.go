@@ -60,7 +60,7 @@ func (t Token) String() string {
 }
 
 // TODO(lex): optional quoting
-type Lexer struct {
+type lexer struct {
 	input *bytes.Buffer
 	// arg tells whether the next lex call is LexText or LexArg.
 	arg             bool
@@ -68,20 +68,20 @@ type Lexer struct {
 	Output          []Token
 }
 
-func NewLexer(s string) *Lexer {
-	return &Lexer{
+func newLexer(s string) *lexer {
+	return &lexer{
 		input: bytes.NewBufferString(s),
 	}
 }
 
-func (l *Lexer) Lex() error {
+func (l *lexer) Lex() error {
 	if l.arg {
 		return l.LexArg()
 	}
 	return l.LexText(&bytes.Buffer{})
 }
 
-func (l *Lexer) LexText(buf *bytes.Buffer) error {
+func (l *lexer) LexText(buf *bytes.Buffer) error {
 	for {
 		ch, err := l.input.ReadByte()
 		if errors.Is(err, io.EOF) {
@@ -120,7 +120,7 @@ func (l *Lexer) LexText(buf *bytes.Buffer) error {
 	}
 }
 
-func (l *Lexer) lexQuotedText(textBuf *bytes.Buffer, quoteBuf *bytes.Buffer) error {
+func (l *lexer) lexQuotedText(textBuf *bytes.Buffer, quoteBuf *bytes.Buffer) error {
 	for {
 		ch, err := l.input.ReadByte()
 		if errors.Is(err, io.EOF) {
@@ -159,7 +159,7 @@ func (l *Lexer) lexQuotedText(textBuf *bytes.Buffer, quoteBuf *bytes.Buffer) err
 	}
 }
 
-func (l *Lexer) LexArg() error {
+func (l *lexer) LexArg() error {
 	for {
 		ch, err := l.input.ReadByte()
 		if errors.Is(err, io.EOF) {
@@ -206,7 +206,7 @@ func (l *Lexer) LexArg() error {
 	}
 }
 
-func (l *Lexer) lexNumber(buf *bytes.Buffer) error {
+func (l *lexer) lexNumber(buf *bytes.Buffer) error {
 	for {
 		ch, err := l.input.ReadByte()
 		if errors.Is(err, io.EOF) {
@@ -230,7 +230,7 @@ func (l *Lexer) lexNumber(buf *bytes.Buffer) error {
 	}
 }
 
-func (l *Lexer) lexWord(buf *bytes.Buffer) error {
+func (l *lexer) lexWord(buf *bytes.Buffer) error {
 	for {
 		ch, err := l.input.ReadByte()
 		if errors.Is(err, io.EOF) {
@@ -251,18 +251,18 @@ func (l *Lexer) lexWord(buf *bytes.Buffer) error {
 	}
 }
 
-func (l *Lexer) outText(s string) {
+func (l *lexer) outText(s string) {
 	l.Output = append(l.Output, Token{Type: TokenTypeText, Value: s})
 }
 
-func (l *Lexer) outNumber(s string) {
+func (l *lexer) outNumber(s string) {
 	l.Output = append(l.Output, Token{Type: TokenTypeNumber, Value: s})
 }
 
-func (l *Lexer) outWord(s string) {
+func (l *lexer) outWord(s string) {
 	l.Output = append(l.Output, Token{Type: TokenTypeWord, Value: s})
 }
 
-func (l *Lexer) out(t TokenType) {
+func (l *lexer) out(t TokenType) {
 	l.Output = append(l.Output, Token{Type: t})
 }

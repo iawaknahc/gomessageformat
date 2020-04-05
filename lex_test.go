@@ -7,7 +7,7 @@ import (
 )
 
 func lexText(t *testing.T, input string, tokens ...string) {
-	l := NewLexer(input)
+	l := newLexer(input)
 	var actual []string
 	var err error
 loop:
@@ -36,7 +36,7 @@ loop:
 }
 
 func lexArg(t *testing.T, input string, tokens ...string) {
-	l := NewLexer(input)
+	l := newLexer(input)
 	var actual []string
 	var err error
 loop:

@@ -48,26 +48,26 @@ type PluralArgNode struct {
 type PoundNode struct{}
 
 func Parse(s string) ([]Node, error) {
-	p := Parser{lexer: NewLexer(s)}
+	p := parser{lexer: newLexer(s)}
 	p.lexer.isInPluralStyle = p.isInPluralStyle
 	return p.parse(s)
 }
 
-type Parser struct {
-	lexer      *Lexer
+type parser struct {
+	lexer      *lexer
 	tokens     []Token
 	poundStack []bool
 }
 
-func (p *Parser) pushPoundStack(pound bool) {
+func (p *parser) pushPoundStack(pound bool) {
 	p.poundStack = append(p.poundStack, pound)
 }
 
-func (p *Parser) popPoundStack() {
+func (p *parser) popPoundStack() {
 	p.poundStack = p.poundStack[0 : len(p.poundStack)-1]
 }
 
-func (p *Parser) isInPluralStyle() bool {
+func (p *parser) isInPluralStyle() bool {
 	if len(p.poundStack) <= 0 {
 		return false
 	}
@@ -75,7 +75,7 @@ func (p *Parser) isInPluralStyle() bool {
 	return top
 }
 
-func (p *Parser) parse(s string) ([]Node, error) {
+func (p *parser) parse(s string) ([]Node, error) {
 	nodes, err := p.parseMessage(TokenTypeEOF, false)
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func (p *Parser) parse(s string) ([]Node, error) {
 	return nodes, nil
 }
 
-func (p *Parser) next() (*Token, error) {
+func (p *parser) next() (*Token, error) {
 	if len(p.tokens) <= 0 {
 		err := p.lexer.Lex()
 		if err != nil {
@@ -97,11 +97,11 @@ func (p *Parser) next() (*Token, error) {
 	return &t, nil
 }
 
-func (p *Parser) putBack(t *Token) {
+func (p *parser) putBack(t *Token) {
 	p.tokens = append([]Token{*t}, p.tokens...)
 }
 
-func (p *Parser) expect(types ...TokenType) (*Token, error) {
+func (p *parser) expect(types ...TokenType) (*Token, error) {
 	token, err := p.next()
 	if err != nil {
 		return nil, err
@@ -114,7 +114,7 @@ func (p *Parser) expect(types ...TokenType) (*Token, error) {
 	return nil, fmt.Errorf("unexpected token: %v", token)
 }
 
-func (p *Parser) expectWord(words ...string) (*Token, error) {
+func (p *parser) expectWord(words ...string) (*Token, error) {
 	word, err := p.expect(TokenTypeWord)
 	if err != nil {
 		return nil, err
@@ -127,7 +127,7 @@ func (p *Parser) expectWord(words ...string) (*Token, error) {
 	return nil, fmt.Errorf("unexpected token: %v", word)
 }
 
-func (p *Parser) parseMessage(endToken TokenType, pound bool) ([]Node, error) {
+func (p *parser) parseMessage(endToken TokenType, pound bool) ([]Node, error) {
 	p.pushPoundStack(pound)
 	defer p.popPoundStack()
 	textNodes, err := p.parseMessageText()
@@ -145,7 +145,7 @@ func (p *Parser) parseMessage(endToken TokenType, pound bool) ([]Node, error) {
 	return out, nil
 }
 
-func (p *Parser) parseMessageText() ([]Node, error) {
+func (p *parser) parseMessageText() ([]Node, error) {
 	textNode, err := p.parseMessageText0()
 	if err != nil {
 		return nil, err
@@ -175,7 +175,7 @@ func (p *Parser) parseMessageText() ([]Node, error) {
 	return out, nil
 }
 
-func (p *Parser) parseMessageText0() (Node, error) {
+func (p *parser) parseMessageText0() (Node, error) {
 	text, err := p.expect(TokenTypeText)
 	if err != nil {
 		return nil, err
@@ -183,7 +183,7 @@ func (p *Parser) parseMessageText0() (Node, error) {
 	return TextNode{Value: text.Value}, nil
 }
 
-func (p *Parser) parseArgMessageText(endToken TokenType) ([]Node, error) {
+func (p *parser) parseArgMessageText(endToken TokenType) ([]Node, error) {
 	lbraceOrEnd, err := p.expect(TokenTypeLBrace, endToken)
 	if err != nil {
 		return nil, err
@@ -209,7 +209,7 @@ func (p *Parser) parseArgMessageText(endToken TokenType) ([]Node, error) {
 	return out, nil
 }
 
-func (p *Parser) parseArg() (Node, error) {
+func (p *parser) parseArg() (Node, error) {
 	argNameOrNumber, err := p.expect(TokenTypeWord, TokenTypeNumber)
 	if err != nil {
 		return nil, err
@@ -269,7 +269,7 @@ func (p *Parser) parseArg() (Node, error) {
 	panic("unreachable")
 }
 
-func (p *Parser) parsePluralStyle() (offset int, clauses []PluralClause, err error) {
+func (p *parser) parsePluralStyle() (offset int, clauses []PluralClause, err error) {
 	for {
 		var token *Token
 		token, err = p.expect(TokenTypeRBrace, TokenTypeWord, TokenTypeEqual)
@@ -340,7 +340,7 @@ func (p *Parser) parsePluralStyle() (offset int, clauses []PluralClause, err err
 	}
 }
 
-func (p *Parser) parseSelectStyle() ([]SelectClause, error) {
+func (p *parser) parseSelectStyle() ([]SelectClause, error) {
 	var clauses []SelectClause
 	for {
 		rbraceOrWord, err := p.expect(TokenTypeRBrace, TokenTypeWord)
