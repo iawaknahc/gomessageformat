@@ -8,6 +8,7 @@ import (
 	"golang.org/x/text/language"
 )
 
+// FormatPositional parses pattern and format to string with args.
 func FormatPositional(tag language.Tag, pattern string, args ...interface{}) (out string, err error) {
 	nodes, err := Parse(pattern)
 	if err != nil {

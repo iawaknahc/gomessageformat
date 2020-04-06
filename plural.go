@@ -23,6 +23,7 @@ func formToString(form plural.Form) string {
 	panic("unreachable")
 }
 
+// Cardinal determines the cardinal form of number in lang.
 func Cardinal(lang language.Tag, number interface{}) (out string, err error) {
 	i, v, w, f, t, err := IVWFT(number)
 	if err != nil {
@@ -32,6 +33,7 @@ func Cardinal(lang language.Tag, number interface{}) (out string, err error) {
 	return formToString(form), nil
 }
 
+// Ordinal determines the ordinal form of number in lang.
 func Ordinal(lang language.Tag, number interface{}) (out string, err error) {
 	i, v, w, f, t, err := IVWFT(number)
 	if err != nil {

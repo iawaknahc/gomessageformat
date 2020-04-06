@@ -5,31 +5,46 @@ import (
 	"strconv"
 )
 
+// Argument is either named argument or positional argument.
 type Argument struct {
 	Name  string
 	Index int
 }
 
-type Node interface{}
+// Node is an semantic item.
+type Node interface {
+	messageFormatNode()
+}
 
+// TextNode is a text segment.
 type TextNode struct {
 	Value string
 }
 
+func (_ TextNode) messageFormatNode() {}
+
+// NoneArgNode is `{Argument}`.
 type NoneArgNode struct {
 	Arg Argument
 }
 
+func (_ NoneArgNode) messageFormatNode() {}
+
+// SelectClause is `Keyword {message}`.
 type SelectClause struct {
 	Keyword string
 	Nodes   []Node
 }
 
+// SelectArgNode is `{Argument, select, SelectClause+}`.
 type SelectArgNode struct {
 	Arg     Argument
 	Clauses []SelectClause
 }
 
+func (_ SelectArgNode) messageFormatNode() {}
+
+// PluralClause is `(keyword | =ExplicitValue) {message}`.
 type PluralClause struct {
 	// If Keyword is empty, use ExplicitValue
 	Keyword       string
@@ -37,6 +52,7 @@ type PluralClause struct {
 	Nodes         []Node
 }
 
+// PluralArgNode is `{Argument, plural | selectordinal, [offset:number] PluralClause+}`.
 type PluralArgNode struct {
 	Arg Argument
 	// plural or selectordinal
@@ -45,8 +61,14 @@ type PluralArgNode struct {
 	Clauses []PluralClause
 }
 
+func (_ PluralArgNode) messageFormatNode() {}
+
+// PoundNode is `#`.
 type PoundNode struct{}
 
+func (_ PoundNode) messageFormatNode() {}
+
+// Parse parses the pattern s into message.
 func Parse(s string) ([]Node, error) {
 	p := parser{lexer: newLexer(s)}
 	p.lexer.isInPluralStyle = p.isInPluralStyle

@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+// IVWFT derives i, v, w, f, t from number according to
+// https://unicode.org/reports/tr35/tr35-numbers.html#Operands
 func IVWFT(number interface{}) (i, v, w, f, t int, err error) {
 	switch value := number.(type) {
 	case int8:
