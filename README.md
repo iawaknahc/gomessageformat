@@ -1,3 +1,38 @@
+## What is this?
+
+This is a Go implementation of [ICU MessageFormat](https://unicode-org.github.io/icu-docs/apidoc/released/icu4j/com/ibm/icu/text/MessageFormat.html).
+
+## Example
+
+```golang
+package main
+
+import (
+	"fmt"
+
+	"github.com/iawaknahc/gomessageformat"
+	"golang.org/x/text/language"
+)
+
+func main() {
+	// Try change numFiles to 0 or 2.
+	numFiles := 1
+	out, err := messageformat.FormatPositional(
+		language.English,
+		`{0, plural,
+			=0 {There are no files on disk.}
+			=1 {There is only 1 file on disk.}
+			other {There are # files on disk.}
+		}`,
+		numFiles,
+	)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%s\n", out)
+}
+```
+
 ## Caveats
 
 - The only implemented ApostropheMode is [DOUBLE_REQUIRED](https://unicode-org.github.io/icu-docs/apidoc/released/icu4j/com/ibm/icu/text/MessagePattern.ApostropheMode.html#DOUBLE_REQUIRED)
