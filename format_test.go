@@ -1,6 +1,7 @@
 package messageformat
 
 import (
+	"fmt"
 	"testing"
 
 	"golang.org/x/text/language"
@@ -151,4 +152,22 @@ func TestFormatPositional(t *testing.T) {
 	test(pattern, "Sam invites Alex to their party.", gender, 1, host, guest)
 	test(pattern, "Sam invites Alex and one other person to their party.", gender, 2, host, guest)
 	test(pattern, "Sam invites Alex and 2 other people to their party.", gender, 3, host, guest)
+}
+
+func ExampleFormatPositional() {
+	numFiles := 1
+	out, err := FormatPositional(
+		language.English,
+		`{0, plural,
+			=0 {There are no files on disk.}
+			=1 {There is only 1 file on disk.}
+			other {There are # files on disk.}
+		}`,
+		numFiles,
+	)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%s\n", out)
+	// Output: There is only 1 file on disk.
 }
