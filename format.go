@@ -8,8 +8,18 @@ import (
 	"golang.org/x/text/language"
 )
 
-// FormatPositional parses pattern and format to string with args.
+// FormatPositional parses pattern and format to string with a slice of args.
 func FormatPositional(tag language.Tag, pattern string, args ...interface{}) (out string, err error) {
+	o := make(map[string]interface{})
+	for idx, val := range args {
+		name := strconv.Itoa(idx)
+		o[name] = val
+	}
+	return FormatNamed(tag, pattern, o)
+}
+
+// FormatNamed parses pattern and format to string with a map of args.
+func FormatNamed(tag language.Tag, pattern string, args map[string]interface{}) (out string, err error) {
 	nodes, err := Parse(pattern)
 	if err != nil {
 		return
@@ -18,7 +28,7 @@ func FormatPositional(tag language.Tag, pattern string, args ...interface{}) (ou
 	formatter := &formatter{
 		Buf:  &strings.Builder{},
 		Tag:  tag,
-		Args: sliceArgsToNamedArgs(args),
+		Args: args,
 	}
 
 	err = formatter.Format(nodes, nil)
@@ -27,15 +37,6 @@ func FormatPositional(tag language.Tag, pattern string, args ...interface{}) (ou
 	}
 
 	out = formatter.Buf.String()
-	return
-}
-
-func sliceArgsToNamedArgs(args []interface{}) (out map[string]interface{}) {
-	out = make(map[string]interface{})
-	for idx, val := range args {
-		name := strconv.Itoa(idx)
-		out[name] = val
-	}
 	return
 }
 
