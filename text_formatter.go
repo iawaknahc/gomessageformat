@@ -40,6 +40,11 @@ func FormatNamed(tag language.Tag, pattern string, args map[string]interface{}) 
 	return
 }
 
+type argumentMinusOffset struct {
+	Name  string
+	Value interface{}
+}
+
 type textFormatter struct {
 	Buf  *strings.Builder
 	Tag  language.Tag
@@ -221,80 +226,20 @@ func (f *textFormatter) FormatPluralArgNode(node PluralArgNode) (err error) {
 	return
 }
 
-func (f *textFormatter) OffsetValue(argName string, value interface{}, offset int) (offsetValue interface{}, err error) {
-	switch v := value.(type) {
-	case int8:
-		offsetValue = int8(int64(v) - int64(offset))
-	case int16:
-		offsetValue = int16(int64(v) - int64(offset))
-	case int32:
-		offsetValue = int32(int64(v) - int64(offset))
-	case int64:
-		offsetValue = int64(int64(v) - int64(offset))
-	case int:
-		offsetValue = int(int64(v) - int64(offset))
-	case uint8:
-		offsetValue = uint8(int64(v) - int64(offset))
-	case uint16:
-		offsetValue = uint16(int64(v) - int64(offset))
-	case uint32:
-		offsetValue = uint32(int64(v) - int64(offset))
-	case uint64:
-		offsetValue = uint64(int64(v) - int64(offset))
-	case uint:
-		offsetValue = uint(int64(v) - int64(offset))
-	case float32:
-		offsetValue = float32(float32(v) - float32(offset))
-	case float64:
-		offsetValue = float64(float64(v) - float64(offset))
-	case string:
-		var f64 float64
-		f64, err = strconv.ParseFloat(v, 64)
-		if err != nil {
-			return
-		}
-		offsetValue = strconv.FormatFloat(f64-float64(offset), 'f', -1, 64)
-	default:
+func (f *textFormatter) OffsetValue(argName string, value interface{}, offset int) (out interface{}, err error) {
+	out, err = offsetValue(value, offset)
+	if err != nil {
 		err = fmt.Errorf("expected numeric type: %v %T", argName, value)
+		return
 	}
 	return
 }
 
 func (f *textFormatter) MatchExplicitValue(argName string, value interface{}, explicitValue int) (match bool, err error) {
-	switch v := value.(type) {
-	case int8:
-		match = int64(v) == int64(explicitValue)
-	case int16:
-		match = int64(v) == int64(explicitValue)
-	case int32:
-		match = int64(v) == int64(explicitValue)
-	case int64:
-		match = int64(v) == int64(explicitValue)
-	case int:
-		match = v == explicitValue
-	case uint8:
-		match = int64(v) == int64(explicitValue)
-	case uint16:
-		match = int64(v) == int64(explicitValue)
-	case uint32:
-		match = int64(v) == int64(explicitValue)
-	case uint64:
-		match = int64(v) == int64(explicitValue)
-	case uint:
-		match = int64(v) == int64(explicitValue)
-	case float32:
-		match = float32(v) == float32(explicitValue)
-	case float64:
-		match = float64(v) == float64(explicitValue)
-	case string:
-		var f64 float64
-		f64, err = strconv.ParseFloat(v, 64)
-		if err != nil {
-			return
-		}
-		match = f64 == float64(explicitValue)
-	default:
+	match, err = matchExplicitValue(value, explicitValue)
+	if err != nil {
 		err = fmt.Errorf("expected numeric type: %v %T", argName, value)
+		return
 	}
 	return
 }
