@@ -16,7 +16,11 @@ func TestFormatTemplateParseTree(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to format html template: %v\n", err)
 		} else {
-			template, err := htmltemplate.New("main").AddParseTree("main", tree)
+			template := htmltemplate.New("main")
+			template.Funcs(htmltemplate.FuncMap{
+				TemplateRuntimeFuncName: TemplateRuntimeFunc,
+			})
+			template, err := template.AddParseTree("main", tree)
 			if err != nil {
 				t.Errorf("failed to add parse tree: %v\n", err)
 			} else {
@@ -55,4 +59,57 @@ func TestFormatTemplateParseTree(t *testing.T) {
 		"YOU": "John",
 		"ME":  "Jane",
 	})
+
+	// Simple select
+	test(`{GENDER, select,
+				male {He jumps over the lazy dog}
+				female {She jumps over the lazy dog}
+				other {They jump over the lazy dog}}`,
+		"He jumps over the lazy dog",
+		map[string]interface{}{
+			"GENDER": "male",
+		})
+	test(`{GENDER, select,
+				male {He jumps over the lazy dog}
+				female {She jumps over the lazy dog}
+				other {They jump over the lazy dog}}`,
+		"She jumps over the lazy dog",
+		map[string]interface{}{
+			"GENDER": "female",
+		})
+	test(`{GENDER, select,
+				male {He jumps over the lazy dog}
+				female {She jumps over the lazy dog}
+				other {They jump over the lazy dog}}`,
+		"They jump over the lazy dog",
+		map[string]interface{}{
+			"GENDER": "other",
+		})
+	test(`{GENDER, select,
+				male {He jumps over the lazy dog}
+				female {She jumps over the lazy dog}
+				other {They jump over the lazy dog}}`,
+		"They jump over the lazy dog",
+		map[string]interface{}{
+			"GENDER": false,
+		})
+
+	// Select with only other clause
+	test(`{GENDER, select,
+				other {They jump over the lazy dog}}`,
+		"They jump over the lazy dog",
+		map[string]interface{}{
+			"GENDER": 0,
+		})
+
+	// Nested select
+	test(`{GENDER, select,
+				male {He jumps over {OBJECT}}
+				female {She jumps over {OBJECT}}
+				other {They jump over {OBJECT}}}`,
+		"He jumps over the lazy dog",
+		map[string]interface{}{
+			"GENDER": "male",
+			"OBJECT": "the lazy dog",
+		})
 }
