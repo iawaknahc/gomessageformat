@@ -25,7 +25,7 @@ func FormatNamed(tag language.Tag, pattern string, args map[string]interface{}) 
 		return
 	}
 
-	formatter := &formatter{
+	formatter := &textFormatter{
 		Buf:  &strings.Builder{},
 		Tag:  tag,
 		Args: args,
@@ -45,13 +45,13 @@ type argumentMinusOffset struct {
 	Value interface{}
 }
 
-type formatter struct {
+type textFormatter struct {
 	Buf  *strings.Builder
 	Tag  language.Tag
 	Args map[string]interface{}
 }
 
-func (f *formatter) Format(nodes []Node, argMinusOffset *argumentMinusOffset) (err error) {
+func (f *textFormatter) Format(nodes []Node, argMinusOffset *argumentMinusOffset) (err error) {
 	for _, inode := range nodes {
 		switch node := inode.(type) {
 		case TextNode:
@@ -72,7 +72,7 @@ func (f *formatter) Format(nodes []Node, argMinusOffset *argumentMinusOffset) (e
 	return
 }
 
-func (f *formatter) ResolveArgument(arg Argument) (name string, value interface{}, err error) {
+func (f *textFormatter) ResolveArgument(arg Argument) (name string, value interface{}, err error) {
 	name = arg.Name
 	if name == "" {
 		name = strconv.Itoa(arg.Index)
@@ -87,7 +87,7 @@ func (f *formatter) ResolveArgument(arg Argument) (name string, value interface{
 	return
 }
 
-func (f *formatter) FormatValue(argName string, value interface{}) (out string, err error) {
+func (f *textFormatter) FormatValue(argName string, value interface{}) (out string, err error) {
 	switch v := value.(type) {
 	case int8:
 		out = strconv.FormatInt(int64(v), 10)
@@ -123,12 +123,12 @@ func (f *formatter) FormatValue(argName string, value interface{}) (out string, 
 	return
 }
 
-func (f *formatter) FormatTextNode(node TextNode) (err error) {
+func (f *textFormatter) FormatTextNode(node TextNode) (err error) {
 	f.Buf.WriteString(node.Value)
 	return
 }
 
-func (f *formatter) FormatNoneArgNode(node NoneArgNode) (err error) {
+func (f *textFormatter) FormatNoneArgNode(node NoneArgNode) (err error) {
 	argName, argValue, err := f.ResolveArgument(node.Arg)
 	if err != nil {
 		return
@@ -143,7 +143,7 @@ func (f *formatter) FormatNoneArgNode(node NoneArgNode) (err error) {
 	return
 }
 
-func (f *formatter) FormatSelectArgNode(node SelectArgNode) (err error) {
+func (f *textFormatter) FormatSelectArgNode(node SelectArgNode) (err error) {
 	argName, argValue, err := f.ResolveArgument(node.Arg)
 	if err != nil {
 		return
@@ -182,7 +182,7 @@ func (f *formatter) FormatSelectArgNode(node SelectArgNode) (err error) {
 	return
 }
 
-func (f *formatter) FormatPluralArgNode(node PluralArgNode) (err error) {
+func (f *textFormatter) FormatPluralArgNode(node PluralArgNode) (err error) {
 	argName, argValue, err := f.ResolveArgument(node.Arg)
 	if err != nil {
 		return
@@ -253,7 +253,7 @@ func (f *formatter) FormatPluralArgNode(node PluralArgNode) (err error) {
 	return
 }
 
-func (f *formatter) OffsetValue(argName string, value interface{}, offset int) (offsetValue interface{}, err error) {
+func (f *textFormatter) OffsetValue(argName string, value interface{}, offset int) (offsetValue interface{}, err error) {
 	switch v := value.(type) {
 	case int8:
 		offsetValue = int8(int64(v) - int64(offset))
@@ -292,7 +292,7 @@ func (f *formatter) OffsetValue(argName string, value interface{}, offset int) (
 	return
 }
 
-func (f *formatter) MatchExplicitValue(argName string, value interface{}, explicitValue int) (match bool, err error) {
+func (f *textFormatter) MatchExplicitValue(argName string, value interface{}, explicitValue int) (match bool, err error) {
 	switch v := value.(type) {
 	case int8:
 		match = int64(v) == int64(explicitValue)
@@ -331,7 +331,7 @@ func (f *formatter) MatchExplicitValue(argName string, value interface{}, explic
 	return
 }
 
-func (f *formatter) FormatPoundNode(argumentMinusOffset *argumentMinusOffset) (err error) {
+func (f *textFormatter) FormatPoundNode(argumentMinusOffset *argumentMinusOffset) (err error) {
 	if argumentMinusOffset == nil {
 		err = fmt.Errorf("lexer emitted pound token incorrectly")
 		return
