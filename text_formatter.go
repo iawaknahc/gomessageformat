@@ -40,11 +40,6 @@ func FormatNamed(tag language.Tag, pattern string, args map[string]interface{}) 
 	return
 }
 
-type argumentMinusOffset struct {
-	Name  string
-	Value interface{}
-}
-
 type textFormatter struct {
 	Buf  *strings.Builder
 	Tag  language.Tag
