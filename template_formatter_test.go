@@ -1,6 +1,7 @@
 package messageformat
 
 import (
+	"fmt"
 	htmltemplate "html/template"
 	"strings"
 	"testing"
@@ -282,4 +283,45 @@ func TestFormatTemplateParseTree(t *testing.T) {
 	test(`<a href="{UNSAFE}">Click me</a>`, `<a href="#ZgotmplZ">Click me</a>`, map[string]interface{}{
 		"UNSAFE": "javascript:alert()",
 	})
+}
+
+func ExampleFormatTemplateParseTree() {
+	tree, err := FormatTemplateParseTree(language.English,
+		`Hello there! Check <a href="{LINK}">this</a> out!`)
+	if err != nil {
+		panic(err)
+	}
+
+	template := htmltemplate.New("main")
+	template.Funcs(htmltemplate.FuncMap{
+		TemplateRuntimeFuncName: TemplateRuntimeFunc,
+		"makemap": func(pairs ...interface{}) map[string]interface{} {
+			out := make(map[string]interface{})
+			for i := 0; i < len(pairs); i += 2 {
+				key := pairs[i].(string)
+				value := pairs[i+1]
+				out[key] = value
+			}
+			return out
+		},
+	})
+
+	_, err = template.Parse(`<!DOCTYPE html><html><head><title>Hi</title></head><body><p>{{ template "greeting" (makemap "LINK" .Link) }}</p></body></html>`)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = template.AddParseTree("greeting", tree)
+	if err != nil {
+		panic(err)
+	}
+	var buf strings.Builder
+	err = template.Execute(&buf, map[string]interface{}{
+		"Link": "https://www.example.com",
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%s\n", buf.String())
+	// Output: <!DOCTYPE html><html><head><title>Hi</title></head><body><p>Hello there! Check <a href="https://www.example.com">this</a> out!</p></body></html>
 }

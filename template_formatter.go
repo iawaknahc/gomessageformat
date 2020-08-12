@@ -13,8 +13,10 @@ type argumentOffset struct {
 	Offset int
 }
 
+// TemplateRuntimeFuncName is the name of the runtime helper function used in the output template.
 const TemplateRuntimeFuncName = "__messageformat__"
 
+// TemplateRuntimeFunc is the runtime helper function used in the output template.
 func TemplateRuntimeFunc(typ string, args ...interface{}) interface{} {
 	switch typ {
 	case "select":
@@ -90,6 +92,9 @@ func TemplateRuntimeFunc(typ string, args ...interface{}) interface{} {
 	}
 }
 
+// FormatTemplateParseTree turns pattern into a text/template/parse.Tree.
+// This is the recommended way to use messageformat with html/template
+// where you can include HTML in your translation.
 func FormatTemplateParseTree(tag language.Tag, pattern string) (tree *templateparse.Tree, err error) {
 	nodes, err := Parse(pattern)
 	if err != nil {
