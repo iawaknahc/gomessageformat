@@ -2,6 +2,23 @@
 
 This is a Go implementation of [ICU MessageFormat](https://unicode-org.github.io/icu-docs/apidoc/released/icu4j/com/ibm/icu/text/MessageFormat.html).
 
+## How to build
+
+This library depends on icu4c 67.1
+
+On macOS, the simplest way is to install it with brew
+
+```sh
+brew install icu4c
+```
+
+Since macOS comes with its own icu4c, in order for the Go toolchain to find our installation of icu4c,
+we have to set the following environment variable.
+
+```sh
+export PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig"
+```
+
 ## Example
 
 ```golang
