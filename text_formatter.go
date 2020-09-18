@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/text/language"
+
+	"github.com/iawaknahc/gomessageformat/icu4c"
 )
 
 // FormatPositional parses pattern and format to string with a slice of args.
@@ -58,6 +61,12 @@ func (f *textFormatter) Format(nodes []Node, argMinusOffset *argumentMinusOffset
 			err = f.FormatTextNode(node)
 		case NoneArgNode:
 			err = f.FormatNoneArgNode(node)
+		case DateArgNode:
+			err = f.FormatDateArgNode(node)
+		case TimeArgNode:
+			err = f.FormatTimeArgNode(node)
+		case DatetimeArgNode:
+			err = f.FormatDatetimeArgNode(node)
 		case SelectArgNode:
 			err = f.FormatSelectArgNode(node)
 		case PluralArgNode:
@@ -113,6 +122,96 @@ func (f *textFormatter) FormatNoneArgNode(node NoneArgNode) (err error) {
 	}
 
 	f.Buf.WriteString(stringValue)
+	return
+}
+
+func (f *textFormatter) FormatDateArgNode(node DateArgNode) (err error) {
+	argName, argValue, err := f.ResolveArgument(node.Arg)
+	if err != nil {
+		return
+	}
+
+	var t *time.Time
+	switch v := argValue.(type) {
+	case time.Time:
+		t = &v
+	case *time.Time:
+		t = v
+	}
+
+	if t == nil {
+		err = fmt.Errorf("expected %v (%T) to be time.Time", argName, argValue)
+		return
+	}
+
+	tz := icu4c.TZName("UTC")
+	style := styleToStyle(node.Style)
+	out, err := icu4c.FormatDatetime(f.Tag, tz, style, icu4c.DateFormatStyleNone, *t)
+	if err != nil {
+		return
+	}
+
+	f.Buf.WriteString(out)
+	return
+}
+
+func (f *textFormatter) FormatTimeArgNode(node TimeArgNode) (err error) {
+	argName, argValue, err := f.ResolveArgument(node.Arg)
+	if err != nil {
+		return
+	}
+
+	var t *time.Time
+	switch v := argValue.(type) {
+	case time.Time:
+		t = &v
+	case *time.Time:
+		t = v
+	}
+
+	if t == nil {
+		err = fmt.Errorf("expected %v (%T) to be time.Time", argName, argValue)
+		return
+	}
+
+	tz := icu4c.TZName("UTC")
+	style := styleToStyle(node.Style)
+	out, err := icu4c.FormatDatetime(f.Tag, tz, icu4c.DateFormatStyleNone, style, *t)
+	if err != nil {
+		return
+	}
+
+	f.Buf.WriteString(out)
+	return
+}
+
+func (f *textFormatter) FormatDatetimeArgNode(node DatetimeArgNode) (err error) {
+	argName, argValue, err := f.ResolveArgument(node.Arg)
+	if err != nil {
+		return
+	}
+
+	var t *time.Time
+	switch v := argValue.(type) {
+	case time.Time:
+		t = &v
+	case *time.Time:
+		t = v
+	}
+
+	if t == nil {
+		err = fmt.Errorf("expected %v (%T) to be time.Time", argName, argValue)
+		return
+	}
+
+	tz := icu4c.TZName("UTC")
+	style := styleToStyle(node.Style)
+	out, err := icu4c.FormatDatetime(f.Tag, tz, style, style, *t)
+	if err != nil {
+		return
+	}
+
+	f.Buf.WriteString(out)
 	return
 }
 

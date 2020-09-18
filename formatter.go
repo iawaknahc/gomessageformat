@@ -3,6 +3,8 @@ package messageformat
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/iawaknahc/gomessageformat/icu4c"
 )
 
 func formatValue(value interface{}) (out string, err error) {
@@ -117,4 +119,19 @@ func matchExplicitValue(value interface{}, explicitValue int) (match bool, err e
 		err = fmt.Errorf("expected numeric type: %T", value)
 	}
 	return
+}
+
+func styleToStyle(style string) icu4c.DateFormatStyle {
+	switch style {
+	case "short":
+		return icu4c.DateFormatStyleShort
+	case "medium":
+		return icu4c.DateFormatStyleMedium
+	case "long":
+		return icu4c.DateFormatStyleLong
+	case "full":
+		return icu4c.DateFormatStyleFull
+	default:
+		panic(fmt.Errorf("unexpected style: %v", style))
+	}
 }
