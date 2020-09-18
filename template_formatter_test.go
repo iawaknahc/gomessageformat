@@ -5,6 +5,7 @@ import (
 	htmltemplate "html/template"
 	"strings"
 	"testing"
+	"time"
 
 	"golang.org/x/text/language"
 )
@@ -59,6 +60,44 @@ func TestFormatTemplateParseTree(t *testing.T) {
 	test("Hello {YOU}, I am {ME}", "Hello John, I am Jane", map[string]interface{}{
 		"YOU": "John",
 		"ME":  "Jane",
+	})
+
+	// date arguments.
+	test("{T, date, short}", "11/10/09", map[string]interface{}{
+		"T": time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	})
+	test("{T, date, medium}", "Nov 10, 2009", map[string]interface{}{
+		"T": time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	})
+	test("{T, date, long}", "November 10, 2009", map[string]interface{}{
+		"T": time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	})
+	test("{T, date, full}", "Tuesday, November 10, 2009", map[string]interface{}{
+		"T": time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	})
+	test("{T, time, short}", "11:00 PM", map[string]interface{}{
+		"T": time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	})
+	test("{T, time, medium}", "11:00:00 PM", map[string]interface{}{
+		"T": time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	})
+	test("{T, time, long}", "11:00:00 PM UTC", map[string]interface{}{
+		"T": time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	})
+	test("{T, time, full}", "11:00:00 PM Coordinated Universal Time", map[string]interface{}{
+		"T": time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	})
+	test("{T, datetime, short}", "11/10/09, 11:00 PM", map[string]interface{}{
+		"T": time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	})
+	test("{T, datetime, medium}", "Nov 10, 2009, 11:00:00 PM", map[string]interface{}{
+		"T": time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	})
+	test("{T, datetime, long}", "November 10, 2009 at 11:00:00 PM UTC", map[string]interface{}{
+		"T": time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	})
+	test("{T, datetime, full}", "Tuesday, November 10, 2009 at 11:00:00 PM Coordinated Universal Time", map[string]interface{}{
+		"T": time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
 	})
 
 	// Simple select

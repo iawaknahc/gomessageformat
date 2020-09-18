@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"strconv"
 	templateparse "text/template/parse"
+	"time"
 
 	"golang.org/x/text/language"
+
+	"github.com/iawaknahc/gomessageformat/icu4c"
 )
 
 type argumentOffset struct {
@@ -19,6 +22,81 @@ const TemplateRuntimeFuncName = "__messageformat__"
 // TemplateRuntimeFunc is the runtime helper function used in the output template.
 func TemplateRuntimeFunc(typ string, args ...interface{}) interface{} {
 	switch typ {
+	case "date":
+		tagStr := args[0].(string)
+		styleStr := args[1].(string)
+		value := args[2]
+
+		tag := language.Make(tagStr)
+		tz := icu4c.TZName("UTC")
+		style := styleToStyle(styleStr)
+		var t *time.Time
+		switch v := value.(type) {
+		case time.Time:
+			t = &v
+		case *time.Time:
+			t = v
+		}
+
+		if t == nil {
+			panic(fmt.Errorf("expected %v to be time.Time", value))
+		}
+		out, err := icu4c.FormatDatetime(tag, tz, style, icu4c.DateFormatStyleNone, *t)
+		if err != nil {
+			panic(fmt.Errorf("messageformat: failed to format date time: %w", err))
+		}
+
+		return out
+	case "time":
+		tagStr := args[0].(string)
+		styleStr := args[1].(string)
+		value := args[2]
+
+		tag := language.Make(tagStr)
+		tz := icu4c.TZName("UTC")
+		style := styleToStyle(styleStr)
+		var t *time.Time
+		switch v := value.(type) {
+		case time.Time:
+			t = &v
+		case *time.Time:
+			t = v
+		}
+
+		if t == nil {
+			panic(fmt.Errorf("expected %v to be time.Time", value))
+		}
+		out, err := icu4c.FormatDatetime(tag, tz, icu4c.DateFormatStyleNone, style, *t)
+		if err != nil {
+			panic(fmt.Errorf("messageformat: failed to format date time: %w", err))
+		}
+
+		return out
+	case "datetime":
+		tagStr := args[0].(string)
+		styleStr := args[1].(string)
+		value := args[2]
+
+		tag := language.Make(tagStr)
+		tz := icu4c.TZName("UTC")
+		style := styleToStyle(styleStr)
+		var t *time.Time
+		switch v := value.(type) {
+		case time.Time:
+			t = &v
+		case *time.Time:
+			t = v
+		}
+
+		if t == nil {
+			panic(fmt.Errorf("expected %v to be time.Time", value))
+		}
+		out, err := icu4c.FormatDatetime(tag, tz, style, style, *t)
+		if err != nil {
+			panic(fmt.Errorf("messageformat: failed to format date time: %w", err))
+		}
+
+		return out
 	case "select":
 		value := args[0]
 		valueString, err := formatValue(value)
@@ -132,6 +210,12 @@ func (f *templateParseTreeFormatter) Format(root *templateparse.ListNode, nodes 
 			err = f.FormatTextNode(root, node)
 		case NoneArgNode:
 			err = f.FormatNoneArgNode(root, node)
+		case DateArgNode:
+			err = f.FormatDateArgNode(root, node)
+		case TimeArgNode:
+			err = f.FormatTimeArgNode(root, node)
+		case DatetimeArgNode:
+			err = f.FormatDatetimeArgNode(root, node)
 		case SelectArgNode:
 			err = f.FormatSelectArgNode(root, node)
 		case PluralArgNode:
@@ -163,6 +247,126 @@ func (f *templateParseTreeFormatter) FormatNoneArgNode(root *templateparse.ListN
 				&templateparse.CommandNode{
 					NodeType: templateparse.NodeCommand,
 					Args: []templateparse.Node{
+						&templateparse.FieldNode{
+							NodeType: templateparse.NodeField,
+							Ident:    []string{node.Arg.Name},
+						},
+					},
+				},
+			},
+		},
+	})
+	return
+}
+
+func (f *templateParseTreeFormatter) FormatDateArgNode(root *templateparse.ListNode, node DateArgNode) (err error) {
+	root.Nodes = append(root.Nodes, &templateparse.ActionNode{
+		NodeType: templateparse.NodeAction,
+		Pipe: &templateparse.PipeNode{
+			NodeType: templateparse.NodePipe,
+			Cmds: []*templateparse.CommandNode{
+				&templateparse.CommandNode{
+					NodeType: templateparse.NodeCommand,
+					Args: []templateparse.Node{
+						&templateparse.IdentifierNode{
+							NodeType: templateparse.NodeIdentifier,
+							Ident:    TemplateRuntimeFuncName,
+						},
+						&templateparse.StringNode{
+							NodeType: templateparse.NodeString,
+							Quoted:   strconv.Quote("date"),
+							Text:     "date",
+						},
+						&templateparse.StringNode{
+							NodeType: templateparse.NodeString,
+							Quoted:   strconv.Quote(f.Tag.String()),
+							Text:     f.Tag.String(),
+						},
+						&templateparse.StringNode{
+							NodeType: templateparse.NodeString,
+							Quoted:   strconv.Quote(node.Style),
+							Text:     node.Style,
+						},
+						&templateparse.FieldNode{
+							NodeType: templateparse.NodeField,
+							Ident:    []string{node.Arg.Name},
+						},
+					},
+				},
+			},
+		},
+	})
+	return
+}
+
+func (f *templateParseTreeFormatter) FormatTimeArgNode(root *templateparse.ListNode, node TimeArgNode) (err error) {
+	root.Nodes = append(root.Nodes, &templateparse.ActionNode{
+		NodeType: templateparse.NodeAction,
+		Pipe: &templateparse.PipeNode{
+			NodeType: templateparse.NodePipe,
+			Cmds: []*templateparse.CommandNode{
+				&templateparse.CommandNode{
+					NodeType: templateparse.NodeCommand,
+					Args: []templateparse.Node{
+						&templateparse.IdentifierNode{
+							NodeType: templateparse.NodeIdentifier,
+							Ident:    TemplateRuntimeFuncName,
+						},
+						&templateparse.StringNode{
+							NodeType: templateparse.NodeString,
+							Quoted:   strconv.Quote("time"),
+							Text:     "time",
+						},
+						&templateparse.StringNode{
+							NodeType: templateparse.NodeString,
+							Quoted:   strconv.Quote(f.Tag.String()),
+							Text:     f.Tag.String(),
+						},
+						&templateparse.StringNode{
+							NodeType: templateparse.NodeString,
+							Quoted:   strconv.Quote(node.Style),
+							Text:     node.Style,
+						},
+						&templateparse.FieldNode{
+							NodeType: templateparse.NodeField,
+							Ident:    []string{node.Arg.Name},
+						},
+					},
+				},
+			},
+		},
+	})
+	return
+}
+
+func (f *templateParseTreeFormatter) FormatDatetimeArgNode(root *templateparse.ListNode, node DatetimeArgNode) (err error) {
+	root.Nodes = append(root.Nodes, &templateparse.ActionNode{
+		NodeType: templateparse.NodeAction,
+		Pipe: &templateparse.PipeNode{
+			NodeType: templateparse.NodePipe,
+			Cmds: []*templateparse.CommandNode{
+				&templateparse.CommandNode{
+					NodeType: templateparse.NodeCommand,
+					Args: []templateparse.Node{
+						&templateparse.IdentifierNode{
+							NodeType: templateparse.NodeIdentifier,
+							Ident:    TemplateRuntimeFuncName,
+						},
+						&templateparse.StringNode{
+							NodeType: templateparse.NodeString,
+							Quoted:   strconv.Quote("datetime"),
+							Text:     "datetime",
+						},
+						&templateparse.StringNode{
+							NodeType: templateparse.NodeString,
+							Quoted:   strconv.Quote(f.Tag.String()),
+							Text:     f.Tag.String(),
+						},
+						&templateparse.StringNode{
+							NodeType: templateparse.NodeString,
+							Quoted:   strconv.Quote(node.Style),
+							Text:     node.Style,
+						},
 						&templateparse.FieldNode{
 							NodeType: templateparse.NodeField,
 							Ident:    []string{node.Arg.Name},
