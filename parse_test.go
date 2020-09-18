@@ -410,3 +410,17 @@ func TestPound(t *testing.T) {
 		TextNode{},
 	})
 }
+
+func TestParseDatetime(t *testing.T) {
+	parse(t, "hello {t, date, short} {t, time, medium} {t, datetime, long} {t, datetime, full}", []Node{
+		TextNode{"hello "},
+		DateArgNode{Arg: Argument{Name: "t"}, Style: "short"},
+		TextNode{" "},
+		TimeArgNode{Arg: Argument{Name: "t"}, Style: "medium"},
+		TextNode{" "},
+		DatetimeArgNode{Arg: Argument{Name: "t"}, Style: "long"},
+		TextNode{" "},
+		DatetimeArgNode{Arg: Argument{Name: "t"}, Style: "full"},
+		TextNode{""},
+	})
+}

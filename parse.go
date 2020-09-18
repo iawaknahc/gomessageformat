@@ -30,6 +30,30 @@ type NoneArgNode struct {
 
 func (_ NoneArgNode) messageFormatNode() {}
 
+// DateArgNode is `{Argument, date, short | medium | long | full}`.
+type DateArgNode struct {
+	Arg   Argument
+	Style string
+}
+
+func (_ DateArgNode) messageFormatNode() {}
+
+// TimeArgNode is `{Argument, time, short | medium | long | full}`.
+type TimeArgNode struct {
+	Arg   Argument
+	Style string
+}
+
+func (_ TimeArgNode) messageFormatNode() {}
+
+// DatetimeArgNode is `{Argument, datetime, short | medium | long | full}`.
+type DatetimeArgNode struct {
+	Arg   Argument
+	Style string
+}
+
+func (_ DatetimeArgNode) messageFormatNode() {}
+
 // SelectClause is `Keyword {message}`.
 type SelectClause struct {
 	Keyword string
@@ -257,7 +281,7 @@ func (p *parser) parseArg() (Node, error) {
 		return NoneArgNode{Arg: arg}, nil
 	}
 
-	argType, err := p.expectWord("plural", "select", "selectordinal")
+	argType, err := p.expectWord("plural", "select", "selectordinal", "date", "time", "datetime")
 	if err != nil {
 		return nil, err
 	}
@@ -286,6 +310,36 @@ func (p *parser) parseArg() (Node, error) {
 			return nil, err
 		}
 		return SelectArgNode{Arg: arg, Clauses: clauses}, nil
+	case "date":
+		style, err := p.expectWord("short", "medium", "long", "full")
+		if err != nil {
+			return nil, err
+		}
+		_, err = p.expect(TokenTypeRBrace)
+		if err != nil {
+			return nil, err
+		}
+		return DateArgNode{Arg: arg, Style: style.Value}, nil
+	case "time":
+		style, err := p.expectWord("short", "medium", "long", "full")
+		if err != nil {
+			return nil, err
+		}
+		_, err = p.expect(TokenTypeRBrace)
+		if err != nil {
+			return nil, err
+		}
+		return TimeArgNode{Arg: arg, Style: style.Value}, nil
+	case "datetime":
+		style, err := p.expectWord("short", "medium", "long", "full")
+		if err != nil {
+			return nil, err
+		}
+		_, err = p.expect(TokenTypeRBrace)
+		if err != nil {
+			return nil, err
+		}
+		return DatetimeArgNode{Arg: arg, Style: style.Value}, nil
 	}
 
 	panic("unreachable")
