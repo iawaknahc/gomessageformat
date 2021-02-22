@@ -170,6 +170,22 @@ func TemplateRuntimeFunc(typ string, args ...interface{}) interface{} {
 	}
 }
 
+func IsEmptyParseTree(tree *templateparse.Tree) bool {
+	if tree == nil {
+		return true
+	}
+	if len(tree.Root.Nodes) <= 0 {
+		return true
+	}
+	if len(tree.Root.Nodes) == 1 {
+		textNode, ok := tree.Root.Nodes[0].(*templateparse.TextNode)
+		if ok && textNode.String() == "" {
+			return true
+		}
+	}
+	return false
+}
+
 // FormatTemplateParseTree turns pattern into a text/template/parse.Tree.
 // This is the recommended way to use messageformat with html/template
 // where you can include HTML in your translation.

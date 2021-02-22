@@ -324,6 +324,18 @@ func TestFormatTemplateParseTree(t *testing.T) {
 	})
 }
 
+func TestIsEmptyParseTree(t *testing.T) {
+	tree, _ := FormatTemplateParseTree(language.Make("en"), "nonempty")
+	if IsEmptyParseTree(tree) {
+		t.Errorf("nonempty")
+	}
+
+	tree, _ = FormatTemplateParseTree(language.Make("en"), "")
+	if !IsEmptyParseTree(tree) {
+		t.Errorf("empty")
+	}
+}
+
 func ExampleFormatTemplateParseTree() {
 	tree, err := FormatTemplateParseTree(language.English,
 		`Hello there! Check <a href="{LINK}">this</a> out!`)
