@@ -113,7 +113,8 @@ func (f *textFormatter) FormatTextNode(node TextNode) (err error) {
 func (f *textFormatter) FormatNoneArgNode(node NoneArgNode) (err error) {
 	argName, argValue, err := f.ResolveArgument(node.Arg)
 	if err != nil {
-		return
+		err = nil
+		argValue = ""
 	}
 
 	stringValue, err := f.FormatValue(argName, argValue)
@@ -128,6 +129,7 @@ func (f *textFormatter) FormatNoneArgNode(node NoneArgNode) (err error) {
 func (f *textFormatter) FormatDateArgNode(node DateArgNode) (err error) {
 	argName, argValue, err := f.ResolveArgument(node.Arg)
 	if err != nil {
+		err = nil
 		return
 	}
 
@@ -158,6 +160,7 @@ func (f *textFormatter) FormatDateArgNode(node DateArgNode) (err error) {
 func (f *textFormatter) FormatTimeArgNode(node TimeArgNode) (err error) {
 	argName, argValue, err := f.ResolveArgument(node.Arg)
 	if err != nil {
+		err = nil
 		return
 	}
 
@@ -188,6 +191,7 @@ func (f *textFormatter) FormatTimeArgNode(node TimeArgNode) (err error) {
 func (f *textFormatter) FormatDatetimeArgNode(node DatetimeArgNode) (err error) {
 	argName, argValue, err := f.ResolveArgument(node.Arg)
 	if err != nil {
+		err = nil
 		return
 	}
 
@@ -218,7 +222,8 @@ func (f *textFormatter) FormatDatetimeArgNode(node DatetimeArgNode) (err error) 
 func (f *textFormatter) FormatSelectArgNode(node SelectArgNode) (err error) {
 	argName, argValue, err := f.ResolveArgument(node.Arg)
 	if err != nil {
-		return
+		err = nil
+		argValue = ""
 	}
 
 	stringValue, err := f.FormatValue(argName, argValue)
@@ -257,7 +262,8 @@ func (f *textFormatter) FormatSelectArgNode(node SelectArgNode) (err error) {
 func (f *textFormatter) FormatPluralArgNode(node PluralArgNode) (err error) {
 	argName, argValue, err := f.ResolveArgument(node.Arg)
 	if err != nil {
-		return
+		err = nil
+		argValue = 0
 	}
 
 	offsetValue, err := f.OffsetValue(argName, argValue, node.Offset)

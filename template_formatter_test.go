@@ -324,6 +324,43 @@ func TestFormatTemplateParseTree(t *testing.T) {
 	})
 }
 
+func TestTemplateUnknownArgument(t *testing.T) {
+	en := language.Make("en")
+	test := func(pattern string, expected string, args map[string]interface{}) {
+		tree, err := FormatTemplateParseTree(en, pattern)
+		if err != nil {
+			t.Errorf("failed to format html template: %v\n", err)
+		} else {
+			template := htmltemplate.New("main")
+			template.Funcs(htmltemplate.FuncMap{
+				TemplateRuntimeFuncName: TemplateRuntimeFunc,
+			})
+			template, err := template.AddParseTree("main", tree)
+			if err != nil {
+				t.Errorf("failed to add parse tree: %v\n", err)
+			} else {
+				var buf strings.Builder
+				err = template.Execute(&buf, args)
+				if err != nil {
+					t.Errorf("failed to execute: %v\n", err)
+				} else {
+					actual := buf.String()
+					if actual != expected {
+						t.Errorf("%v: %v != %v\n", pattern, actual, expected)
+					}
+				}
+			}
+		}
+	}
+
+	test("Hello {NAME}", "Hello ", nil)
+	test("Hello {T, date, short} Hello", "Hello  Hello", nil)
+	test("Hello {T, time, short} Hello", "Hello  Hello", nil)
+	test("Hello {T, datetime, short} Hello", "Hello  Hello", nil)
+	test("Hello {GENDER, select, male {he} female {she} other {they}}", "Hello they", nil)
+	test("Hello {COUNT, plural, one {# cat} other {# cats}}", "Hello 0 cats", nil)
+}
+
 func TestIsEmptyParseTree(t *testing.T) {
 	tree, _ := FormatTemplateParseTree(language.Make("en"), "nonempty")
 	if IsEmptyParseTree(tree) {

@@ -32,6 +32,8 @@ func TemplateRuntimeFunc(typ string, args ...interface{}) interface{} {
 		style := styleToStyle(styleStr)
 		var t *time.Time
 		switch v := value.(type) {
+		case nil:
+			return ""
 		case time.Time:
 			t = &v
 		case *time.Time:
@@ -57,6 +59,8 @@ func TemplateRuntimeFunc(typ string, args ...interface{}) interface{} {
 		style := styleToStyle(styleStr)
 		var t *time.Time
 		switch v := value.(type) {
+		case nil:
+			return ""
 		case time.Time:
 			t = &v
 		case *time.Time:
@@ -82,6 +86,8 @@ func TemplateRuntimeFunc(typ string, args ...interface{}) interface{} {
 		style := styleToStyle(styleStr)
 		var t *time.Time
 		switch v := value.(type) {
+		case nil:
+			return ""
 		case time.Time:
 			t = &v
 		case *time.Time:
@@ -99,6 +105,9 @@ func TemplateRuntimeFunc(typ string, args ...interface{}) interface{} {
 		return out
 	case "select":
 		value := args[0]
+		if value == nil {
+			value = ""
+		}
 		valueString, err := formatValue(value)
 		if err != nil {
 			panic(fmt.Errorf("messageformat: failed to cast value to string: %w", err))
@@ -111,6 +120,10 @@ func TemplateRuntimeFunc(typ string, args ...interface{}) interface{} {
 		value := args[2]
 		keyword := args[3].(string)
 		explicitVaue := args[4].(int)
+
+		if value == nil {
+			value = 0
+		}
 
 		if keyword == "" {
 			match, err := matchExplicitValue(value, explicitVaue)
@@ -136,6 +149,10 @@ func TemplateRuntimeFunc(typ string, args ...interface{}) interface{} {
 		keyword := args[3].(string)
 		explicitVaue := args[4].(int)
 
+		if value == nil {
+			value = 0
+		}
+
 		if keyword == "" {
 			match, err := matchExplicitValue(value, explicitVaue)
 			if err != nil {
@@ -155,6 +172,9 @@ func TemplateRuntimeFunc(typ string, args ...interface{}) interface{} {
 		return pluralForm == keyword
 	case "pound":
 		value := args[0]
+		if value == nil {
+			value = 0
+		}
 		offset := args[1].(int)
 		offsetValue, err := offsetValue(value, offset)
 		if err != nil {

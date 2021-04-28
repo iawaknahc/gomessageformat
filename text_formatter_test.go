@@ -435,6 +435,27 @@ func TestFormatPositional(t *testing.T) {
 	test(pattern, "Sam invites Alex and 2 other people to their party.", gender, 3, host, guest)
 }
 
+func TestTextUnknownArgument(t *testing.T) {
+	en := language.Make("en")
+	test := func(pattern string, expected string, args map[string]interface{}) {
+		actual, err := FormatNamed(en, pattern, args)
+		if err != nil {
+			t.Errorf("err: %v\n", err)
+		} else {
+			if actual != expected {
+				t.Errorf("%v: %v != %v\n", pattern, actual, expected)
+			}
+		}
+	}
+
+	test("Hello {NAME}", "Hello ", nil)
+	test("Hello {T, date, short} Hello", "Hello  Hello", nil)
+	test("Hello {T, time, short} Hello", "Hello  Hello", nil)
+	test("Hello {T, datetime, short} Hello", "Hello  Hello", nil)
+	test("Hello {GENDER, select, male {he} female {she} other {they}}", "Hello they", nil)
+	test("Hello {COUNT, plural, one {# cat} other {# cats}}", "Hello 0 cats", nil)
+}
+
 func ExampleFormatPositional() {
 	numFiles := 1
 	out, err := FormatPositional(
