@@ -94,6 +94,19 @@ func (l *lexer) LexText(buf *bytes.Buffer) error {
 		}
 		switch ch {
 		case '\'':
+			// '' is a literal apostrophe, even outside quoted text.
+			// Otherwise the apostrophe starts quoted text.
+			nextCh, err := l.input.ReadByte()
+			if errors.Is(err, io.EOF) {
+				return ErrUnterminatedQuotedString
+			} else if err != nil {
+				return err
+			}
+			if nextCh == '\'' {
+				buf.WriteByte('\'')
+				continue
+			}
+			l.input.UnreadByte()
 			return l.lexQuotedText(buf, &bytes.Buffer{})
 		case '{':
 			l.outText(buf.String())
@@ -130,14 +143,10 @@ func (l *lexer) lexQuotedText(textBuf *bytes.Buffer, quoteBuf *bytes.Buffer) err
 		}
 		switch ch {
 		case '\'':
-			// ''
-			if quoteBuf.Len() == 0 {
-				textBuf.WriteByte('\'')
-				return l.LexText(textBuf)
-			}
 			// look ahead one byte to see if it is '
 			nextCh, err := l.input.ReadByte()
 			if errors.Is(err, io.EOF) {
+				// The quoted text is terminated by the end of the input.
 				textBuf.Write(quoteBuf.Bytes())
 				l.outText(textBuf.String())
 				l.out(TokenTypeEOF)
@@ -147,7 +156,8 @@ func (l *lexer) lexQuotedText(textBuf *bytes.Buffer, quoteBuf *bytes.Buffer) err
 			}
 			switch nextCh {
 			case '\'':
-				textBuf.WriteByte('\'')
+				// '' is a literal apostrophe. The quoted text continues.
+				quoteBuf.WriteByte('\'')
 			default:
 				l.input.UnreadByte()
 				textBuf.Write(quoteBuf.Bytes())

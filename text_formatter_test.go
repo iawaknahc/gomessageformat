@@ -288,6 +288,36 @@ func TestFormatNamed(t *testing.T) {
 	})
 }
 
+func TestFormatNamedQuoting(t *testing.T) {
+	en := language.Make("en")
+	test := func(pattern string, expected string, args map[string]interface{}) {
+		actual, err := FormatNamed(en, pattern, args)
+		if err != nil {
+			t.Errorf("err: %v\n", err)
+		} else if actual != expected {
+			t.Errorf("%v: %v != %v\n", pattern, actual, expected)
+		}
+	}
+
+	// A doubled apostrophe inside quoted text is a literal apostrophe,
+	// and the quoted text continues after it.
+	test("This '{isn''t}' obvious", "This {isn't} obvious", nil)
+	// A doubled apostrophe outside quoted text is a literal apostrophe.
+	test("It''s {NAME}", "It's John", map[string]interface{}{
+		"NAME": "John",
+	})
+	// Quoted text is not interpreted as an argument.
+	test("'{NAME}' is {NAME}", "{NAME} is John", map[string]interface{}{
+		"NAME": "John",
+	})
+	// # is literal inside quoted text, even in a plural style.
+	test(
+		"{COUNT, plural, other {'#' is #, isn''t it '{odd}'?}}",
+		"# is 3, isn't it {odd}?",
+		map[string]interface{}{"COUNT": 3},
+	)
+}
+
 func TestFormatPositional(t *testing.T) {
 	en := language.Make("en")
 	test := func(pattern string, expected string, args ...interface{}) {
