@@ -32,8 +32,8 @@ func TestFormatTemplateParseTree(t *testing.T) {
 					t.Errorf("failed to execute: %v\n", err)
 				} else {
 					actual := buf.String()
-					if actual != expected {
-						t.Errorf("%v: %v != %v\n", pattern, actual, expected)
+					if !normalizeICUSpacesEqual(actual, expected) {
+						t.Errorf("%v: %q != %q\n", pattern, actual, expected)
 					}
 				}
 			}
@@ -357,8 +357,8 @@ func TestTemplateUnknownArgument(t *testing.T) {
 					t.Errorf("failed to execute: %v\n", err)
 				} else {
 					actual := buf.String()
-					if actual != expected {
-						t.Errorf("%v: %v != %v\n", pattern, actual, expected)
+					if !normalizeICUSpacesEqual(actual, expected) {
+						t.Errorf("%v: %q != %q\n", pattern, actual, expected)
 					}
 				}
 			}

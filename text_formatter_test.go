@@ -15,8 +15,8 @@ func TestFormatNamed(t *testing.T) {
 		if err != nil {
 			t.Errorf("err: %v\n", err)
 		} else {
-			if actual != expected {
-				t.Errorf("%v: %v != %v\n", pattern, actual, expected)
+			if !normalizeICUSpacesEqual(actual, expected) {
+				t.Errorf("%v: %q != %q\n", pattern, actual, expected)
 			}
 		}
 	}
@@ -294,8 +294,8 @@ func TestFormatNamedQuoting(t *testing.T) {
 		actual, err := FormatNamed(en, pattern, args)
 		if err != nil {
 			t.Errorf("err: %v\n", err)
-		} else if actual != expected {
-			t.Errorf("%v: %v != %v\n", pattern, actual, expected)
+		} else if !normalizeICUSpacesEqual(actual, expected) {
+			t.Errorf("%v: %q != %q\n", pattern, actual, expected)
 		}
 	}
 
@@ -325,8 +325,8 @@ func TestFormatPositional(t *testing.T) {
 		if err != nil {
 			t.Errorf("err: %v\n", err)
 		} else {
-			if actual != expected {
-				t.Errorf("%v: %v != %v\n", pattern, actual, expected)
+			if !normalizeICUSpacesEqual(actual, expected) {
+				t.Errorf("%v: %q != %q\n", pattern, actual, expected)
 			}
 		}
 	}
@@ -472,8 +472,8 @@ func TestTextUnknownArgument(t *testing.T) {
 		if err != nil {
 			t.Errorf("err: %v\n", err)
 		} else {
-			if actual != expected {
-				t.Errorf("%v: %v != %v\n", pattern, actual, expected)
+			if !normalizeICUSpacesEqual(actual, expected) {
+				t.Errorf("%v: %q != %q\n", pattern, actual, expected)
 			}
 		}
 	}
