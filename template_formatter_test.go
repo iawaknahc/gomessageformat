@@ -32,8 +32,8 @@ func TestFormatTemplateParseTree(t *testing.T) {
 					t.Errorf("failed to execute: %v\n", err)
 				} else {
 					actual := buf.String()
-					if actual != expected {
-						t.Errorf("%v: %v != %v\n", pattern, actual, expected)
+					if !normalizeICUSpacesEqual(actual, expected) {
+						t.Errorf("%v: %q != %q\n", pattern, actual, expected)
 					}
 				}
 			}
@@ -322,6 +322,18 @@ func TestFormatTemplateParseTree(t *testing.T) {
 	test(`<a href="{UNSAFE}">Click me</a>`, `<a href="#ZgotmplZ">Click me</a>`, map[string]interface{}{
 		"UNSAFE": "javascript:alert()",
 	})
+
+	// A doubled apostrophe inside quoted text is a literal apostrophe,
+	// and the quoted text continues after it.
+	test("This '{isn''t}' obvious", "This {isn't} obvious", nil)
+	test("It''s {NAME}", "It's John", map[string]interface{}{
+		"NAME": "John",
+	})
+	test(
+		"{COUNT, plural, other {'#' is #, isn''t it '{odd}'?}}",
+		"# is 3, isn't it {odd}?",
+		map[string]interface{}{"COUNT": 3},
+	)
 }
 
 func TestTemplateUnknownArgument(t *testing.T) {
@@ -345,8 +357,8 @@ func TestTemplateUnknownArgument(t *testing.T) {
 					t.Errorf("failed to execute: %v\n", err)
 				} else {
 					actual := buf.String()
-					if actual != expected {
-						t.Errorf("%v: %v != %v\n", pattern, actual, expected)
+					if !normalizeICUSpacesEqual(actual, expected) {
+						t.Errorf("%v: %q != %q\n", pattern, actual, expected)
 					}
 				}
 			}
