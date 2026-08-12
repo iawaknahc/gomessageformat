@@ -19,6 +19,12 @@ we have to set the following environment variable.
 export PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig"
 ```
 
+Alternatively, if you are a Nix user and a nix-direnv user, you can just run
+
+```sh
+echo "use flake" >> .envrc && direnv allow
+```
+
 ## Example
 
 ```golang
